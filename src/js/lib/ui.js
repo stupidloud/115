@@ -250,6 +250,14 @@ class UI {
                 <textarea class="setting-menu-input textarea-o headers-s" type="textarea" spellcheck="false"></textarea>
               </div>
             </div><!-- /.setting-menu-row -->
+            <div class="setting-menu-row">
+              <div class="setting-menu-name">
+                <label class="setting-menu-label">过滤关键词（换行分隔）</label>
+              </div>
+              <div class="setting-menu-value">
+                <textarea class="setting-menu-input textarea-o filterKeywords-s" type="textarea" spellcheck="false" placeholder="例如: 赌场\n裸聊\nwww."></textarea>
+              </div>
+            </div><!-- /.setting-menu-row -->
           </div><!-- /.setting-menu-body -->
           <div class="modal-footer">
             <div class="setting-menu-copyright">
@@ -323,7 +331,7 @@ class UI {
   }
 
   updateSetting (configData) {
-    const { rpcList, configSync, sha1Check, vip, small, interval, downloadPath, userAgent, browserUserAgent, referer, headers } = configData
+    const { rpcList, configSync, sha1Check, vip, small, interval, downloadPath, userAgent, browserUserAgent, referer, headers, filterKeywords } = configData
     // reset dom
     document.querySelectorAll('.rpc-s').forEach((rpc, index) => {
       if (index !== 0) {
@@ -359,6 +367,7 @@ class UI {
     document.querySelector('.browser-userAgent-s').checked = browserUserAgent
     document.querySelector('.referer-s').value = referer
     document.querySelector('.headers-s').value = headers
+    document.querySelector('.filterKeywords-s').value = filterKeywords
 
     this.mostRecentConfigData = configData
   }
@@ -384,6 +393,7 @@ class UI {
     const browserUserAgent = document.querySelector('.browser-userAgent-s').checked
     const referer = document.querySelector('.referer-s').value
     const headers = document.querySelector('.headers-s').value
+    const filterKeywords = document.querySelector('.filterKeywords-s').value
 
     const configData = {
       rpcList,
@@ -397,6 +407,8 @@ class UI {
       browserUserAgent,
       referer,
       headers
+      ,
+      filterKeywords
     }
     Store.trigger('setConfigData', configData)
   }

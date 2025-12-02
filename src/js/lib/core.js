@@ -185,18 +185,15 @@ class Core {
     const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']
     const maxImageSize = 100 * 1024 // 100KB以下的图片通常是推广图
 
-    // 常见的推广文件名关键词（不区分大小写），使用简单 substring 匹配
-    const promotionKeywords = [
-      '推广', '广告', 'promo', 'promotion',
-      '网址', 'url', 'website', 'site',
-      '更多', 'more', '最新', 'latest',
-      '下载', 'download', 'torrent',
-      '点击', 'click', '访问', 'visit',
-      '地址', 'address', 'link',
-      '必看', 'readme', 'read me',
-      '说明', 'info', 'information',
-      '福利', '资源', '分享'
-    ]
+    // 从设置读取关键词（换行/逗号/空格分隔），若未配置则使用默认内置列表
+    const filterKeywordsStr = this.getConfigData('filterKeywords')
+    let promotionKeywords = []
+    if (filterKeywordsStr && typeof filterKeywordsStr === 'string') {
+      promotionKeywords = filterKeywordsStr.split(/[,\n\r]+/).map(s => s.trim()).filter(Boolean)
+    } else {
+      // 依赖 Store.defaultConfigData.filterKeywords 提供默认值，若未设置则使用空数组
+      promotionKeywords = []
+    }
     // 简单子串匹配，关键词列表中已移除短词（如 ad, hd, free）以减少误判
 
     const videoExtensions = ['.mp4', '.mkv', '.avi', '.mov', '.flv', '.wmv', '.webm', '.rmvb', '.ts', '.m2ts', '.mpg', '.mpeg', '.3gp', '.divx', '.xvid', '.m4v', '.vob', '.asf']

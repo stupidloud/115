@@ -18,6 +18,9 @@ class Store extends EventEmitter {
       browserUserAgent: true,
       referer: this.defaultReferer,
       headers: ''
+      ,
+      // 默认过滤关键词，换行分隔
+      filterKeywords: '推广\n广告\npromo\npromotion\n网址\nurl\nwebsite\nsite\n更多\nmore\n最新\nlatest\n下载\ndownload\ntorrent\n点击\nclick\n访问\nvisit\n地址\naddress\nlink\n必看\nreadme\n说明\ninfo\ninformation\n福利\n资源\n分享\n赌场\n娱乐城\n澳门\n银河\n注册免费\n免费送\n可提款\n提款\n聊天室\n裸聊\n直播\n美女荷官'
     }
     this.configData = {}
     this.on('initConfigData', this.init.bind(this))
