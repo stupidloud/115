@@ -167,6 +167,8 @@ class Core {
 
   // 过滤BT资源中的推广文件
   filterPromotionFiles(fileDownloadInfo) {
+    // 先过滤掉非视频格式的文件（直接生效）
+
     // 常见的推广文件扩展名
     const promotionExtensions = [
       '.url',      // URL快捷方式
@@ -183,7 +185,7 @@ class Core {
     const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']
     const maxImageSize = 100 * 1024 // 100KB以下的图片通常是推广图
 
-    // 常见的推广文件名关键词（不区分大小写）
+    // 常见的推广文件名关键词（不区分大小写），使用简单 substring 匹配
     const promotionKeywords = [
       '推广', '广告', 'promo', 'promotion',
       '网址', 'url', 'website', 'site',
@@ -195,10 +197,21 @@ class Core {
       '说明', 'info', 'information',
       '福利', '资源', '分享'
     ]
+    // 简单子串匹配，关键词列表中已移除短词（如 ad, hd, free）以减少误判
+
+    const videoExtensions = ['.mp4', '.mkv', '.avi', '.mov', '.flv', '.wmv', '.webm', '.rmvb', '.ts', '.m2ts', '.mpg', '.mpeg', '.3gp', '.divx', '.xvid', '.m4v', '.vob', '.asf']
 
     return fileDownloadInfo.filter((file) => {
-      const fileName = file.name.toLowerCase()
-      const fileSize = file.size || 0
+      const fileName = (file.name || '').toLowerCase()
+      const fileSize = Number(file.size || 0)
+
+      // 0. 非视频扩展先过滤掉
+      const matchesExt = fileName.match(/(\.[^.]+)$/)
+      const ext = matchesExt ? matchesExt[1] : ''
+      if (!videoExtensions.includes(ext)) {
+        console.log(`[过滤] 非视频格式文件: ${file.name}`)
+        return false
+      }
 
       // 1. 过滤推广文件扩展名
       if (promotionExtensions.some(ext => fileName.endsWith(ext))) {
@@ -212,7 +225,7 @@ class Core {
         return false
       }
 
-      // 3. 过滤包含推广关键词的文件
+      // 3. 过滤包含推广关键词的文件（简单 substring 检查）
       if (promotionKeywords.some(keyword => fileName.includes(keyword))) {
         console.log(`[过滤] 推广关键词: ${file.name}`)
         return false
