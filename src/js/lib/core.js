@@ -1,11 +1,11 @@
 import Store from './store'
 
 class Core {
-  constructor () {
+  constructor() {
     this.cookies = {}
   }
 
-  httpSend ({ url, options }, resolve, reject) {
+  httpSend({ url, options }, resolve, reject) {
     fetch(url, options).then((response) => {
       if (response.ok) {
         response.json().then((data) => {
@@ -19,35 +19,35 @@ class Core {
     })
   }
 
-  getConfigData (key = null) {
+  getConfigData(key = null) {
     return Store.getConfigData(key)
   }
 
-  objectToQueryString (obj) {
+  objectToQueryString(obj) {
     return Object.keys(obj).map((key) => {
       return `${encodeURIComponent(key)}=${encodeURIComponent(obj[key])}`
     }).join('&')
   }
 
-  sendToBackground (method, data, callback) {
+  sendToBackground(method, data, callback) {
     chrome.runtime.sendMessage({
       method,
       data
     }, callback)
   }
 
-  showToast (message, type) {
+  showToast(message, type) {
     window.postMessage({ type: 'showToast', data: { message, type } }, location.origin)
   }
 
-  getHashParameter (name) {
+  getHashParameter(name) {
     const hash = window.location.hash
     const paramsString = hash.substr(1)
     const searchParams = new URLSearchParams(paramsString)
     return searchParams.get(name)
   }
 
-  formatCookies () {
+  formatCookies() {
     const cookies = []
     for (const key in this.cookies) {
       cookies.push(`${key}=${this.cookies[key]}`)
@@ -55,7 +55,7 @@ class Core {
     return cookies.join('; ')
   }
 
-  getHeader (type = 'RPC') {
+  getHeader(type = 'RPC') {
     const headerOption = []
     const useBrowserUA = this.getConfigData('browserUserAgent')
     let userAgent = this.getConfigData('userAgent')
@@ -89,7 +89,7 @@ class Core {
   }
 
   // 解析 RPC地址 返回验证数据 和地址
-  parseURL (url) {
+  parseURL(url) {
     const parseURL = new URL(url)
     let authStr = parseURL.username ? `${parseURL.username}:${decodeURI(parseURL.password)}` : null
     if (authStr) {
@@ -108,7 +108,7 @@ class Core {
     return { authStr, path, options }
   }
 
-  generateParameter (authStr, path, data) {
+  generateParameter(authStr, path, data) {
     if (authStr && authStr.startsWith('token')) {
       data.params.unshift(authStr)
     }
@@ -127,7 +127,7 @@ class Core {
   }
 
   // get aria2 version
-  getVersion (rpcPath, element) {
+  getVersion(rpcPath, element) {
     const data = {
       jsonrpc: '2.0',
       method: 'aria2.getVersion',
@@ -144,7 +144,7 @@ class Core {
     })
   }
 
-  copyText (text) {
+  copyText(text) {
     if (navigator.clipboard) {
       navigator.clipboard.writeText(text).then(() => {
         this.showToast('拷贝成功~', 'inf')
@@ -157,7 +157,7 @@ class Core {
   }
 
   // cookies format  [{"url": "http://pan.baidu.com/", "name": "BDUSS"},{"url": "http://pcs.baidu.com/", "name": "pcsett"}]
-  requestCookies (cookies) {
+  requestCookies(cookies) {
     return new Promise((resolve) => {
       this.sendToBackground('getCookies', cookies, (value) => {
         resolve(value)
@@ -165,12 +165,80 @@ class Core {
     })
   }
 
-  aria2RPCMode (rpcPath, fileDownloadInfo) {
+  // 过滤BT资源中的推广文件
+  filterPromotionFiles(fileDownloadInfo) {
+    // 常见的推广文件扩展名
+    const promotionExtensions = [
+      '.url',      // URL快捷方式
+      '.txt',      // 文本文件（通常是推广信息）
+      '.html',     // 网页文件
+      '.htm',      // 网页文件
+      '.nfo',      // NFO信息文件
+      '.diz',      // DIZ描述文件
+      '.md',       // Markdown文件（可能是说明）
+      '.lnk'       // Windows快捷方式
+    ]
+
+    // 常见的推广图片（通常很小）
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp']
+    const maxImageSize = 100 * 1024 // 100KB以下的图片通常是推广图
+
+    // 常见的推广文件名关键词（不区分大小写）
+    const promotionKeywords = [
+      '推广', '广告', 'ad', 'ads', 'promo', 'promotion',
+      '网址', 'url', 'website', 'site',
+      '更多', 'more', '最新', 'latest',
+      '下载', 'download', 'torrent',
+      '免费', 'free', '高清', 'hd',
+      '点击', 'click', '访问', 'visit',
+      '地址', 'address', 'link',
+      '必看', 'readme', 'read me',
+      '说明', 'info', 'information',
+      '福利', '资源', '分享'
+    ]
+
+    return fileDownloadInfo.filter((file) => {
+      const fileName = file.name.toLowerCase()
+      const fileSize = file.size || 0
+
+      // 1. 过滤推广文件扩展名
+      if (promotionExtensions.some(ext => fileName.endsWith(ext))) {
+        console.log(`[过滤] 推广文件: ${file.name}`)
+        return false
+      }
+
+      // 2. 过滤小图片文件（通常是推广图）
+      if (imageExtensions.some(ext => fileName.endsWith(ext)) && fileSize < maxImageSize) {
+        console.log(`[过滤] 推广图片: ${file.name} (${fileSize} bytes)`)
+        return false
+      }
+
+      // 3. 过滤包含推广关键词的文件
+      if (promotionKeywords.some(keyword => fileName.includes(keyword))) {
+        console.log(`[过滤] 推广关键词: ${file.name}`)
+        return false
+      }
+
+      // 保留其他文件
+      return true
+    })
+  }
+
+  aria2RPCMode(rpcPath, fileDownloadInfo) {
     const { authStr, path, options } = this.parseURL(rpcPath)
     const small = this.getConfigData('small')
 
     if (small) {
       fileDownloadInfo.sort((a, b) => a.size - b.size)
+    }
+
+    // 过滤BT资源中的推广文件
+    const originalCount = fileDownloadInfo.length
+    fileDownloadInfo = this.filterPromotionFiles(fileDownloadInfo)
+    const filteredCount = originalCount - fileDownloadInfo.length
+
+    if (filteredCount > 0) {
+      this.showToast(`已过滤 ${filteredCount} 个推广文件，准备下载 ${fileDownloadInfo.length} 个文件`, 'inf')
     }
 
     fileDownloadInfo.forEach((file) => {
@@ -210,12 +278,22 @@ class Core {
     })
   }
 
-  aria2TXTMode (fileDownloadInfo) {
+  aria2TXTMode(fileDownloadInfo) {
     const aria2CmdTxt = []
     const aria2Txt = []
     const idmTxt = []
     const downloadLinkTxt = []
     const prefixTxt = 'data:text/plain;charset=utf-8,'
+
+    // 过滤BT资源中的推广文件
+    const originalCount = fileDownloadInfo.length
+    fileDownloadInfo = this.filterPromotionFiles(fileDownloadInfo)
+    const filteredCount = originalCount - fileDownloadInfo.length
+
+    if (filteredCount > 0) {
+      this.showToast(`已过滤 ${filteredCount} 个推广文件，准备导出 ${fileDownloadInfo.length} 个文件`, 'inf')
+    }
+
     fileDownloadInfo.forEach((file) => {
       this.cookies = file.cookies
       let aria2CmdLine = `aria2c -c -s10 -k1M -x16 --enable-rpc=false -o ${JSON.stringify(file.name)} ${this.getHeader('aria2Cmd')} ${JSON.stringify(file.link)}`
