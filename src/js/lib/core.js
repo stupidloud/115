@@ -185,11 +185,10 @@ class Core {
 
     // 常见的推广文件名关键词（不区分大小写）
     const promotionKeywords = [
-      '推广', '广告', 'ad', 'ads', 'promo', 'promotion',
+      '推广', '广告', 'promo', 'promotion',
       '网址', 'url', 'website', 'site',
       '更多', 'more', '最新', 'latest',
       '下载', 'download', 'torrent',
-      '免费', 'free', '高清', 'hd',
       '点击', 'click', '访问', 'visit',
       '地址', 'address', 'link',
       '必看', 'readme', 'read me',
