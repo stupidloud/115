@@ -9,6 +9,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    container:
+      image: python:2.7
     steps:
       - uses: actions/checkout@v3
         with:
@@ -27,13 +29,8 @@ jobs:
 
       - name: Install RX3-Creator
         run: |
-          sudo add-apt-repository universe
-          sudo apt update
-          sudo apt install -y python2 vim-common
-          curl https://bootstrap.pypa.io/pip/2.7/get-pip.py --output get-pip.py
-          sudo python2 get-pip.py
           git clone https://github.com/pawliczka/CRX3-Creator.git /tmp/CRX3-Creator
-          sudo pip2 install -r /tmp/CRX3-Creator/requirements.txt
+          pip2 install -r /tmp/CRX3-Creator/requirements.txt
 
       - name: Install deps
         run: pnpm install --frozen-lockfile
@@ -54,7 +51,13 @@ jobs:
           mv dist release
           mv 115.crx release
 
-      - uses: EndBug/add-and-commit@v9
+      - name: List release contents
+        run: |
+          echo "=== release contents ==="
+          ls -la release || true
+
+      - name: Upload release folder as artifact
+        uses: actions/upload-artifact@v4
         with:
-          add: "release"
-          message: "[ci skip] update crx and release"
+          name: 115-crx-release
+          path: release
