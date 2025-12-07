@@ -1,28 +1,28 @@
-import gulp from 'gulp'
+const gulp = require('gulp')
 
-import rollupEach from 'gulp-rollup-each'
-import rollupCommon from '@rollup/plugin-commonjs'
-import rollupResolve from '@rollup/plugin-node-resolve'
+const rollupEach = require('gulp-rollup-each')
+const rollupCommon = require('@rollup/plugin-commonjs')
+const { nodeResolve: rollupResolve } = require('@rollup/plugin-node-resolve')
 
-import del from 'del'
-import gulpIf from 'gulp-if'
+const del = require('del')
+const gulpIf = require('gulp-if')
 
-import postcss from 'gulp-postcss'
-import dartSass from 'sass'
-import gulpSass from 'gulp-sass'
-import autoprefixer from 'autoprefixer'
-import concat from 'gulp-concat'
-import cleanCSS from 'gulp-clean-css'
+const postcss = require('gulp-postcss')
+const dartSass = require('sass')
+const gulpSass = require('gulp-sass')
+const autoprefixer = require('autoprefixer')
+const concat = require('gulp-concat')
+const cleanCSS = require('gulp-clean-css')
 
-import imagemin from 'gulp-imagemin'
-import mozjpeg from 'imagemin-mozjpeg'
-import pngquant from 'imagemin-pngquant'
+const imagemin = require('gulp-imagemin')
+const mozjpeg = require('imagemin-mozjpeg')
+const pngquant = require('imagemin-pngquant')
 
-import plumber from 'gulp-plumber'
+const plumber = require('gulp-plumber')
 
-import terser from 'gulp-terser'
+const terser = require('gulp-terser')
 
-import zip from 'gulp-zip'
+const zip = require('gulp-zip')
 
 const sass = gulpSass(dartSass)
 
@@ -134,7 +134,7 @@ function watch () {
   gulp.watch(paths.styles.src, styles)
 }
 
-export function compress () {
+function compress () {
   return gulp.src(paths.compress.src)
     .pipe(zip('chrome.zip'))
     .pipe(gulp.dest(paths.compress.dest))
@@ -148,3 +148,4 @@ exports.build = build
 exports.serve = serve
 exports.publish = publish
 exports.clean = clean
+exports.compress = compress
