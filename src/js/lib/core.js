@@ -196,7 +196,7 @@ class Core {
     }
     // 简单子串匹配，关键词列表中已移除短词（如 ad, hd, free）以减少误判
 
-    const videoExtensions = ['.mp4', '.mkv', '.avi', '.mov', '.flv', '.wmv', '.webm', '.rmvb', '.ts', '.m2ts', '.mpg', '.mpeg', '.3gp', '.divx', '.xvid', '.m4v', '.vob', '.asf']
+    const videoExtensions = ['.mp4', '.mkv', '.avi', '.mov', '.flv', '.wmv', '.webm', '.rmvb', '.ts', '.m2ts', '.mpg', '.mpeg', '.3gp', '.divx', '.xvid', '.m4v', '.vob', '.asf', '.rar', '.zip', '.7z', '.iso']
 
     return fileDownloadInfo.filter((file) => {
       const fileName = (file.name || '').toLowerCase()
