@@ -202,10 +202,10 @@ class Core {
       const fileName = (file.name || '').toLowerCase()
       const fileSize = Number(file.size || 0)
 
-      // 0. 非视频扩展先过滤掉
+      // 0. 非视频扩展先过滤掉（允许没有扩展名的文件）
       const matchesExt = fileName.match(/(\.[^.]+)$/)
       const ext = matchesExt ? matchesExt[1] : ''
-      if (!videoExtensions.includes(ext)) {
+      if (ext && !videoExtensions.includes(ext)) {
         console.log(`[过滤] 非视频格式文件: ${file.name}`)
         return false
       }
