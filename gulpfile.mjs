@@ -1,22 +1,19 @@
+import { existsSync } from 'fs'
 import gulp from 'gulp'
 
 import rollupEach from 'gulp-rollup-each'
 import rollupCommon from '@rollup/plugin-commonjs'
 import rollupResolve from '@rollup/plugin-node-resolve'
 
-import del from 'del'
+import { deleteAsync } from 'del'
 import gulpIf from 'gulp-if'
 
 import postcss from 'gulp-postcss'
-import dartSass from 'sass'
+import * as dartSass from 'sass'
 import gulpSass from 'gulp-sass'
 import autoprefixer from 'autoprefixer'
 import concat from 'gulp-concat'
 import cleanCSS from 'gulp-clean-css'
-
-import imagemin from 'gulp-imagemin'
-import mozjpeg from 'imagemin-mozjpeg'
-import pngquant from 'imagemin-pngquant'
 
 import plumber from 'gulp-plumber'
 
@@ -103,15 +100,8 @@ function styles () {
 }
 
 function images () {
-  return gulp.src(paths.images.src)
-    .pipe(plumber(config.plumberConfig))
-    .pipe(imagemin([
-      pngquant(),
-      mozjpeg(),
-      imagemin.svgo()], {
-      verbose: true
-    }))
-    .pipe(gulp.dest(paths.images.dest))
+  return gulp.src(paths.images.src, { encoding: false })
+    .pipe(gulp.dest(paths.images.dest, { encoding: false }))
 }
 
 function copys () {
@@ -120,12 +110,15 @@ function copys () {
 }
 
 function copyVendor () {
+  if (!existsSync('src/vendor')) {
+    return Promise.resolve()
+  }
   return gulp.src(paths.vendor.src)
     .pipe(gulp.dest(paths.vendor.dest))
 }
 
-function clean () {
-  return del(['dist'])
+export function clean () {
+  return deleteAsync(['dist'])
 }
 
 function watch () {
@@ -135,16 +128,11 @@ function watch () {
 }
 
 export function compress () {
-  return gulp.src(paths.compress.src)
+  return gulp.src(paths.compress.src, { encoding: false })
     .pipe(zip('chrome.zip'))
     .pipe(gulp.dest(paths.compress.dest))
 }
 
-const build = gulp.parallel(scripts, styles, images, copys, copyVendor)
-const serve = gulp.series(clean, build, watch)
-const publish = gulp.series(clean, build, compress)
-
-exports.build = build
-exports.serve = serve
-exports.publish = publish
-exports.clean = clean
+export const build = gulp.parallel(scripts, styles, images, copys, copyVendor)
+export const serve = gulp.series(clean, build, watch)
+export const publish = gulp.series(clean, build, compress)

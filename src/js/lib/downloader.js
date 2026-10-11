@@ -75,7 +75,7 @@ class Downloader {
     }
   }
 
-  getFiles (files) {
+  getFiles (_files) {
     throw new Error('subclass should implement this method!')
   }
 }

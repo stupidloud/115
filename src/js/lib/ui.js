@@ -3,8 +3,8 @@ import Store from './store'
 
 class UI {
   constructor () {
-    this.version = '0.5.1'
-    this.updateDate = '2022/10/02'
+    this.version = '1.0.2'
+    this.updateDate = '2026/06/08'
     Store.on('updateView', (configData) => {
       this.updateSetting(configData)
       this.updateMenu(configData)
@@ -83,6 +83,7 @@ class UI {
   }
 
   resetMenu () {
+    if (!this.context) return
     this.context.querySelectorAll('#more-menu-rpc-section li').forEach((item) => {
       item.remove()
     })
@@ -92,14 +93,15 @@ class UI {
   }
 
   updateMenu (configData) {
+    if (!this.context) return
     this.resetMenu()
     const { rpcList } = configData
     let rpcDOMList = ''
     let contextMenuDOMList = ''
     rpcList.forEach((rpc) => {
-      const rpcDOM = `<a class="export-menu-item rpc-button" href="javascript:void(0);" data-url=${rpc.url}>${rpc.name}</a>`
+      const rpcDOM = `<a class="export-menu-item rpc-button" href="javascript:void(0);" data-url="${rpc.url}">${rpc.name}</a>`
       rpcDOMList += rpcDOM
-      contextMenuDOMList += `<li><a href="javascript:void(0);" data-url=${rpc.url}>${rpc.name}</a></li>`
+      contextMenuDOMList += `<li><a href="javascript:void(0);" data-url="${rpc.url}">${rpc.name}</a></li>`
     })
     this.context.querySelector('#aria2List').insertAdjacentHTML('afterbegin', rpcDOMList)
 
